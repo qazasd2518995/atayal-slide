@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atayal Language Preservation | Presentation</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ===== 粒子背景 Canvas ===== */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ===== 動態背景 ===== */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.6;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(139,69,19,0.5) 0%, rgba(160,82,45,0.2) 40%, transparent 70%);
+            top: -30%;
+            left: -15%;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(218,165,32,0.4) 0%, rgba(184,134,11,0.2) 40%, transparent 70%);
+            bottom: -25%;
+            right: -15%;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(205,133,63,0.4) 0%, transparent 70%);
+            top: 40%;
+            left: 60%;
+            animation-delay: -14s;
+        }
+
+        .orb-4 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(178,102,51,0.35) 0%, transparent 70%);
+            top: 60%;
+            left: 20%;
+            animation-delay: -3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25% { transform: translate(60px, -60px) scale(1.15) rotate(5deg); }
+            50% { transform: translate(-40px, 40px) scale(0.85) rotate(-5deg); }
+            75% { transform: translate(40px, 30px) scale(1.1) rotate(3deg); }
+        }
+
+        /* ===== 光線效果 ===== */
+        .light-rays {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(218,165,32,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(139,69,19,0.08) 0%, transparent 50%);
+        }
+
+        /* ===== 網格背景 ===== */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ===== 主容器 ===== */
+        .presentation-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== 投影片容器 ===== */
+        .slide-wrapper {
+            position: relative;
+            width: 90%;
+            max-width: 1400px;
+            aspect-ratio: 16/9;
+            perspective: 1000px;
+        }
+
+        /* 全螢幕模式 */
+        .slide-wrapper:fullscreen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            width: 100vw;
+            max-width: none;
+            height: 100vh;
+            aspect-ratio: auto;
+        }
+
+        .slide-wrapper:fullscreen .slide {
+            width: auto;
+            height: 100%;
+            max-width: 100%;
+            aspect-ratio: 16/9;
+        }
+
+        .slide-wrapper:fullscreen .slide-frame {
+            border-radius: 0;
+        }
+
+        .slide-wrapper:fullscreen .slide-frame img {
+            border-radius: 0;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95) rotateY(5deg);
+            transition: none;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) rotateY(0deg);
+        }
+
+        .slide-frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow:
+                0 60px 120px -30px rgba(0,0,0,0.7),
+                0 40px 80px -40px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.15),
+                inset 0 0 0 1px rgba(255,255,255,0.05),
+                0 0 80px rgba(218,165,32,0.15);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            transition: box-shadow 0.5s ease;
+        }
+
+        .slide.active .slide-frame {
+            box-shadow:
+                0 60px 120px -30px rgba(0,0,0,0.7),
+                0 40px 80px -40px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.2),
+                inset 0 0 0 1px rgba(255,255,255,0.05),
+                0 0 100px rgba(218,165,32,0.25);
+        }
+
+        .slide-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #f5f0e8;
+            border-radius: 18px;
+        }
+
+        /* ===== 投影片邊框光暈 ===== */
+        .slide-frame::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 22px;
+            background: linear-gradient(
+                135deg,
+                rgba(218,165,32,0.3) 0%,
+                transparent 30%,
+                transparent 70%,
+                rgba(139,69,19,0.3) 100%
+            );
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .slide.active .slide-frame::after {
+            opacity: 1;
+        }
+
+        /* ===== 投影片光澤效果 ===== */
+        .slide-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.15),
+                transparent
+            );
+            transform: skewX(-20deg);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .slide.active .slide-frame::before {
+            animation: shimmer 1.8s ease-out;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 180%; opacity: 0; }
+        }
+
+        /* ===== 影片投影片 ===== */
+        .video-slide-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f5f0e8;
+            padding: 40px;
+        }
+
+        .video-slide-content h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 35px;
+            color: #5D4E37;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .video-slide-content h2::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, #8B4513, #DAA520, #8B4513);
+            border-radius: 2px;
+        }
+
+        .video-container {
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow:
+                0 20px 60px rgba(93, 78, 55, 0.3),
+                0 10px 30px rgba(0,0,0,0.15);
+            border: 3px solid rgba(139, 69, 19, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .video-container video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+
+        /* 影片展開模式 */
+        .video-slide-content.video-expanded {
+            padding: 0;
+            background: #000;
+        }
+
+        .video-slide-content.video-expanded h2 {
+            display: none;
+        }
+
+        .video-slide-content.video-expanded .video-container {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+        }
+
+        .video-slide-content.video-expanded video {
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 影片展開按鈕 */
+        .video-expand-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            z-index: 20;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .video-expand-btn:hover {
+            background: rgba(218,165,32,0.8);
+        }
+
+        /* ===== 導覽控制 ===== */
+        .nav-controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            padding: 16px 32px;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            opacity: 1;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .nav-controls.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+            pointer-events: none;
+        }
+
+        .nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: transparent;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(218,165,32,0.3);
+            border-color: #DAA520;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.8);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .slide-counter .current {
+            color: #DAA520;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* ===== 進度條 ===== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8B4513, #DAA520);
+            z-index: 100;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(218,165,32,0.5);
+        }
+
+        /* ===== 縮圖列表 ===== */
+        .thumbnail-strip {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            max-width: 90%;
+            overflow-x: auto;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail-strip.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 45px;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+
+        .thumbnail:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+
+        .thumbnail.active {
+            opacity: 1;
+            border-color: #DAA520;
+            box-shadow: 0 0 20px rgba(218,165,32,0.5);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ===== 快捷鍵提示 ===== */
+        .keyboard-hint {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .keyboard-hint.visible {
+            opacity: 1;
+        }
+
+        .keyboard-hint kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin: 0 3px;
+            font-family: inherit;
+        }
+
+        /* ===== 全螢幕提示 ===== */
+        .fullscreen-hint {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            transition: opacity 0.4s ease;
+        }
+
+        .fullscreen-btn {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(218,165,32,0.2);
+            border-color: #DAA520;
+        }
+
+        /* ===== 頁面標題 ===== */
+        .slide-title {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 100;
+        }
+
+        /* ===== 載入動畫 ===== */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(218,165,32,0.2);
+            border-top-color: #DAA520;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .loader-subtext {
+            color: #DAA520;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+
+        /* ===== 響應式 ===== */
+        @media (max-width: 768px) {
+            .slide-wrapper {
+                width: 95%;
+            }
+
+            .nav-controls {
+                padding: 12px 20px;
+                gap: 15px;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .thumbnail-strip {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 載入畫面 -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Loading Presentation...</div>
+            <div class="loader-subtext">Atayal Language Preservation</div>
+        </div>
+    </div>
+
+    <!-- 粒子背景 -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- 動態背景 -->
+    <div class="background">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <div class="gradient-orb orb-4"></div>
+    </div>
+    <div class="light-rays"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- 進度條 -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- 全螢幕按鈕 -->
+    <div class="fullscreen-hint">
+        <button class="fullscreen-btn" onclick="toggleFullscreen()">
+            <span>⛶</span> Fullscreen
+        </button>
+    </div>
+
+    <!-- 快捷鍵提示 -->
+    <div class="keyboard-hint" id="keyboardHint">
+        <kbd>←</kbd><kbd>→</kbd> Navigate &nbsp;|&nbsp;
+        <kbd>Space</kbd> Next &nbsp;|&nbsp;
+        <kbd>T</kbd> Thumbnails &nbsp;|&nbsp;
+        <kbd>F</kbd> Fullscreen
+    </div>
+
+    <!-- 主容器 -->
+    <div class="presentation-container">
+        <div class="slide-wrapper" id="slideWrapper" tabindex="0">
+            <!-- Slides will be injected here -->
+        </div>
+    </div>
+
+    <!-- 縮圖列表 -->
+    <div class="thumbnail-strip" id="thumbnailStrip">
+        <!-- Thumbnails will be injected here -->
+    </div>
+
+    <!-- 導覽控制 -->
+    <div class="nav-controls">
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()">←</button>
+        <div class="slide-counter">
+            <span class="current" id="currentSlide">1</span>
+            <span>/ <span id="totalSlides">16</span></span>
+        </div>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        // 投影片配置
+        const slides = [
+            { type: 'image', src: 'slides/slide-01.png', title: 'Title' },
+            { type: 'image', src: 'slides/slide-02.png', title: 'Introduction' },
+            { type: 'image', src: 'slides/slide-03.png', title: 'Research Process' },
+            { type: 'image', src: 'slides/slide-04.png', title: 'Demo Introduction' },
+            { type: 'video', src: 'https://slideatayal.s3.ap-southeast-2.amazonaws.com/Atayal.mp4', title: 'Live Demonstration', poster: 'slides/slide-04.png' },
+            { type: 'image', src: 'slides/slide-05.png', title: 'Quantitative Results' },
+            { type: 'image', src: 'slides/slide-06.png', title: 'Individual Progress' },
+            { type: 'image', src: 'slides/slide-07.png', title: 'User Experience' },
+            { type: 'image', src: 'slides/slide-08.png', title: 'Platform Usage' },
+            { type: 'image', src: 'slides/slide-09.png', title: 'Qualitative Methods' },
+            { type: 'image', src: 'slides/slide-10.png', title: 'Cultural Content' },
+            { type: 'image', src: 'slides/slide-11.png', title: 'Barriers' },
+            { type: 'image', src: 'slides/slide-12.png', title: 'Synthesis' },
+            { type: 'image', src: 'slides/slide-13.png', title: 'Recommendations' },
+            { type: 'image', src: 'slides/slide-14.png', title: 'Conclusion' },
+            { type: 'image', src: 'slides/slide-15.png', title: 'Future Research' }
+        ];
+
+        let currentIndex = 0;
+        let isAnimating = false;
+
+        // 初始化
+        function init() {
+            const wrapper = document.getElementById('slideWrapper');
+            const thumbnailStrip = document.getElementById('thumbnailStrip');
+
+            // 建立投影片
+            slides.forEach((slide, index) => {
+                // 建立投影片元素
+                const slideEl = document.createElement('div');
+                slideEl.className = `slide ${index === 0 ? 'active' : ''}`;
+                slideEl.dataset.index = index;
+
+                const frame = document.createElement('div');
+                frame.className = 'slide-frame';
+
+                if (slide.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = slide.src;
+                    img.alt = slide.title;
+                    img.loading = 'lazy';
+                    frame.appendChild(img);
+                } else if (slide.type === 'video') {
+                    const videoContent = document.createElement('div');
+                    videoContent.className = 'video-slide-content';
+                    videoContent.id = 'videoSlideContent';
+                    videoContent.innerHTML = `
+                        <h2>Live Platform Demonstration</h2>
+                        <div class="video-container" style="position: relative;">
+                            <video controls preload="auto" playsinline poster="${slide.poster}">
+                                <source src="${slide.src}" type="video/mp4">
+                            </video>
+                            <button class="video-expand-btn" onclick="toggleVideoExpand()">
+                                <span id="expandIcon">⛶</span> <span id="expandText">展開影片</span>
+                            </button>
+                        </div>
+                    `;
+                    frame.appendChild(videoContent);
+                }
+
+                slideEl.appendChild(frame);
+                wrapper.appendChild(slideEl);
+
+                // 建立縮圖
+                const thumb = document.createElement('div');
+                thumb.className = `thumbnail ${index === 0 ? 'active' : ''}`;
+                thumb.onclick = () => goToSlide(index);
+
+                const thumbImg = document.createElement('img');
+                thumbImg.src = slide.type === 'video' ? slide.poster : slide.src;
+                thumb.appendChild(thumbImg);
+                thumbnailStrip.appendChild(thumb);
+            });
+
+            document.getElementById('totalSlides').textContent = slides.length;
+            updateProgress();
+
+            // 預載圖片後隱藏載入畫面
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+                showKeyboardHint();
+            }, 1000);
+        }
+
+        // 顯示快捷鍵提示
+        function showKeyboardHint() {
+            const hint = document.getElementById('keyboardHint');
+            hint.classList.add('visible');
+            setTimeout(() => hint.classList.remove('visible'), 5000);
+        }
+
+        // 更新進度條
+        function updateProgress() {
+            const progress = ((currentIndex + 1) / slides.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('currentSlide').textContent = currentIndex + 1;
+
+            // 更新按鈕狀態
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === slides.length - 1;
+
+            // 更新縮圖
+            document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === currentIndex);
+            });
+        }
+
+        // 切換動畫
+        function animateSlide(fromIndex, toIndex, direction) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const allSlides = document.querySelectorAll('.slide');
+            const fromSlide = allSlides[fromIndex];
+            const toSlide = allSlides[toIndex];
+
+            // 暫停所有影片
+            document.querySelectorAll('video').forEach(v => v.pause());
+
+            // 設定動畫參數
+            const xOffset = direction === 'next' ? 150 : -150;
+            const rotateY = direction === 'next' ? -15 : 15;
+            const rotateZ = direction === 'next' ? -3 : 3;
+
+            // 創建時間線動畫
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    isAnimating = false;
+                }
+            });
+
+            // 出場動畫 - 更加戲劇性
+            tl.to(fromSlide, {
+                opacity: 0,
+                scale: 0.85,
+                rotateY: rotateY,
+                rotateZ: rotateZ,
+                x: -xOffset,
+                filter: 'blur(8px)',
+                duration: 0.5,
+                ease: 'power2.in',
+                onComplete: () => {
+                    fromSlide.classList.remove('active');
+                    gsap.set(fromSlide, {
+                        x: 0,
+                        rotateY: 0,
+                        rotateZ: 0,
+                        scale: 1,
+                        filter: 'blur(0px)'
+                    });
+                }
+            }, 0);
+
+            // 準備入場投影片
+            gsap.set(toSlide, {
+                opacity: 0,
+                scale: 0.85,
+                rotateY: -rotateY,
+                rotateZ: -rotateZ,
+                x: xOffset,
+                filter: 'blur(8px)',
+                visibility: 'visible'
+            });
+            toSlide.classList.add('active');
+
+            // 入場動畫 - 帶彈性
+            tl.to(toSlide, {
+                opacity: 1,
+                scale: 1,
+                rotateY: 0,
+                rotateZ: 0,
+                x: 0,
+                filter: 'blur(0px)',
+                duration: 0.6,
+                ease: 'power2.out'
+            }, 0.15);
+
+            // 背景脈衝效果
+            const orbs = document.querySelectorAll('.gradient-orb');
+            orbs.forEach((orb, i) => {
+                gsap.to(orb, {
+                    scale: 1.2,
+                    duration: 0.3,
+                    delay: i * 0.05,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: 'power2.inOut'
+                });
+            });
+
+            currentIndex = toIndex;
+            updateProgress();
+        }
+
+        // 下一張
+        function nextSlide() {
+            if (currentIndex < slides.length - 1) {
+                animateSlide(currentIndex, currentIndex + 1, 'next');
+            }
+        }
+
+        // 上一張
+        function prevSlide() {
+            if (currentIndex > 0) {
+                animateSlide(currentIndex, currentIndex - 1, 'prev');
+            }
+        }
+
+        // 跳轉到指定頁
+        function goToSlide(index) {
+            if (index === currentIndex || isAnimating) return;
+            const direction = index > currentIndex ? 'next' : 'prev';
+            animateSlide(currentIndex, index, direction);
+        }
+
+        // 全螢幕切換 - 只讓簡報畫面全螢幕
+        function toggleFullscreen() {
+            const slideWrapper = document.getElementById('slideWrapper');
+            if (!document.fullscreenElement) {
+                slideWrapper.requestFullscreen().then(() => {
+                    slideWrapper.focus(); // 確保可以接收鍵盤事件
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 讓 slideWrapper 也能接收鍵盤事件
+        document.getElementById('slideWrapper').addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Escape':
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    }
+                    break;
+            }
+        });
+
+        // 切換縮圖顯示
+        function toggleThumbnails() {
+            document.getElementById('thumbnailStrip').classList.toggle('visible');
+        }
+
+        // 切換影片展開模式
+        function toggleVideoExpand() {
+            const videoContent = document.getElementById('videoSlideContent');
+            const expandIcon = document.getElementById('expandIcon');
+            const expandText = document.getElementById('expandText');
+
+            if (videoContent) {
+                videoContent.classList.toggle('video-expanded');
+                const isExpanded = videoContent.classList.contains('video-expanded');
+                expandIcon.textContent = isExpanded ? '⛶' : '⛶';
+                expandText.textContent = isExpanded ? '縮小影片' : '展開影片';
+            }
+        }
+
+        // 自動隱藏導覽列
+        let hideNavTimeout;
+        const navControls = document.querySelector('.nav-controls');
+        const fullscreenHint = document.querySelector('.fullscreen-hint');
+
+        function showNav() {
+            navControls.classList.remove('hidden');
+            if (fullscreenHint) fullscreenHint.style.opacity = '1';
+            clearTimeout(hideNavTimeout);
+            hideNavTimeout = setTimeout(hideNav, 3000); // 3秒後隱藏
+        }
+
+        function hideNav() {
+            navControls.classList.add('hidden');
+            if (fullscreenHint) fullscreenHint.style.opacity = '0';
+        }
+
+        document.addEventListener('mousemove', showNav);
+        document.addEventListener('click', showNav);
+        document.addEventListener('keydown', showNav);
+
+        // 初始啟動隱藏計時器
+        hideNavTimeout = setTimeout(hideNav, 3000);
+
+        // 鍵盤事件
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+                case 't':
+                case 'T':
+                    toggleThumbnails();
+                    break;
+                case 'Home':
+                    goToSlide(0);
+                    break;
+                case 'End':
+                    goToSlide(slides.length - 1);
+                    break;
+            }
+        });
+
+        // 滑鼠滾輪
+        let wheelTimeout;
+        document.addEventListener('wheel', (e) => {
+            clearTimeout(wheelTimeout);
+            wheelTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }, 50);
+        }, { passive: true });
+
+        // 觸控滑動
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        });
+
+        // 初始化
+        init();
+
+        // ===== 粒子背景動畫 =====
+        (function initParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let mouseX = 0, mouseY = 0;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.alpha = Math.random() * 0.4 + 0.1;
+                    this.color = Math.random() > 0.5 ?
+                        `rgba(218, 165, 32, ${this.alpha})` :
+                        `rgba(205, 133, 63, ${this.alpha})`;
+                }
+
+                update() {
+                    // Mouse interaction
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 150) {
+                        const force = (150 - dist) / 150;
+                        this.vx -= (dx / dist) * force * 0.02;
+                        this.vy -= (dy / dist) * force * 0.02;
+                    }
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Friction
+                    this.vx *= 0.99;
+                    this.vy *= 0.99;
+
+                    // Boundaries
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+            }
+
+            // Create particles
+            const particleCount = Math.min(80, window.innerWidth / 15);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            // Draw connections
+            function drawConnections() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < 120) {
+                            const alpha = (1 - dist / 120) * 0.15;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(218, 165, 32, ${alpha})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+
+                drawConnections();
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        })();
+    </script>
+</body>
+</html>

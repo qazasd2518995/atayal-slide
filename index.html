@@ -782,8 +782,9 @@
                     videoContent.innerHTML = `
                         <h2>Live Platform Demonstration</h2>
                         <div class="video-container" style="position: relative;">
-                            <video controls preload="auto" playsinline poster="${slide.poster}">
+                            <video controls preload="metadata" playsinline poster="${slide.poster}" id="mainVideo">
                                 <source src="${slide.src}" type="video/mp4">
+                                Your browser does not support the video tag.
                             </video>
                             <button class="video-expand-btn" onclick="toggleVideoExpand()">
                                 <span id="expandIcon">⛶</span> <span id="expandText">展開影片</span>
@@ -809,6 +810,25 @@
 
             document.getElementById('totalSlides').textContent = slides.length;
             updateProgress();
+
+            // 設定影片事件處理
+            const video = document.getElementById('mainVideo');
+            if (video) {
+                video.addEventListener('error', (e) => {
+                    console.error('Video error:', e);
+                    // 嘗試重新載入
+                    video.load();
+                });
+
+                video.addEventListener('stalled', () => {
+                    console.log('Video stalled, attempting to resume...');
+                });
+
+                // 確保影片準備好可以播放
+                video.addEventListener('canplay', () => {
+                    console.log('Video ready to play');
+                });
+            }
 
             // 預載圖片後隱藏載入畫面
             setTimeout(() => {
@@ -849,8 +869,10 @@
             const fromSlide = allSlides[fromIndex];
             const toSlide = allSlides[toIndex];
 
-            // 暫停所有影片
-            document.querySelectorAll('video').forEach(v => v.pause());
+            // 暫停所有影片並重置
+            document.querySelectorAll('video').forEach(v => {
+                v.pause();
+            });
 
             // 設定動畫參數
             const xOffset = direction === 'next' ? 150 : -150;
@@ -925,6 +947,17 @@
 
             currentIndex = toIndex;
             updateProgress();
+
+            // 如果進入影片頁，確保影片可以播放
+            if (slides[toIndex].type === 'video') {
+                setTimeout(() => {
+                    const video = toSlide.querySelector('video');
+                    if (video) {
+                        // 重新載入影片以確保可以播放
+                        video.load();
+                    }
+                }, 700);
+            }
         }
 
         // 下一張

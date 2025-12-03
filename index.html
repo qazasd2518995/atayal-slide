@@ -647,22 +647,122 @@
         /* ===== 響應式 ===== */
         @media (max-width: 768px) {
             .slide-wrapper {
-                width: 95%;
+                width: 100%;
+                height: auto;
+                aspect-ratio: auto;
+                max-height: 70vh;
+            }
+
+            .slide {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .slide-frame {
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .slide-frame::before,
+            .slide-frame::after {
+                display: none;
+            }
+
+            /* 手機影片樣式 */
+            .video-slide-content {
+                padding: 20px 10px;
+                min-height: 60vh;
+            }
+
+            .video-slide-content h2 {
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+            }
+
+            .video-container {
+                width: 100%;
+                max-width: 100%;
+                border-radius: 8px;
+                border-width: 2px;
+            }
+
+            .video-container video {
+                width: 100%;
+                max-height: 50vh;
+                object-fit: contain;
+            }
+
+            .video-expand-btn {
+                padding: 6px 12px;
+                font-size: 12px;
             }
 
             .nav-controls {
-                padding: 12px 20px;
-                gap: 15px;
+                bottom: 20px;
+                padding: 10px 16px;
+                gap: 12px;
             }
 
             .nav-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+                width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+
+            .slide-counter {
+                font-size: 14px;
+                min-width: 60px;
+            }
+
+            .slide-counter .current {
+                font-size: 18px;
             }
 
             .thumbnail-strip {
                 display: none;
+            }
+
+            .fullscreen-hint {
+                display: none;
+            }
+
+            .keyboard-hint {
+                display: none;
+            }
+
+            .progress-bar {
+                height: 3px;
+            }
+
+            /* 確保影片可點擊 */
+            .presentation-container {
+                padding-top: 10px;
+                padding-bottom: 80px;
+            }
+        }
+
+        /* 更小螢幕 */
+        @media (max-width: 480px) {
+            .video-slide-content h2 {
+                font-size: 1.2rem;
+                letter-spacing: 1px;
+            }
+
+            .video-slide-content {
+                padding: 15px 5px;
+            }
+
+            .nav-controls {
+                bottom: 10px;
+                padding: 8px 12px;
+                gap: 8px;
+            }
+
+            .nav-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
             }
         }
     </style>

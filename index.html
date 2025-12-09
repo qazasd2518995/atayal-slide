@@ -336,6 +336,18 @@
             background: #000;
         }
 
+        /* YouTube iframe 樣式 */
+        .youtube-container {
+            aspect-ratio: 16/9;
+        }
+
+        .youtube-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
         /* 影片展開模式 */
         .video-slide-content.video-expanded {
             padding: 0;
@@ -358,6 +370,17 @@
         .video-slide-content.video-expanded video {
             height: 100%;
             object-fit: contain;
+        }
+
+        .video-slide-content.video-expanded .youtube-container {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: auto;
+        }
+
+        .video-slide-content.video-expanded .youtube-container iframe {
+            width: 100%;
+            height: 100%;
         }
 
         /* 影片展開按鈕 */
@@ -701,6 +724,16 @@
                 object-fit: contain;
             }
 
+            .youtube-container {
+                width: 100%;
+                aspect-ratio: 16/9;
+            }
+
+            .youtube-container iframe {
+                width: 100%;
+                height: 100%;
+            }
+
             .video-expand-btn {
                 padding: 6px 12px;
                 font-size: 12px;
@@ -846,7 +879,7 @@
             { type: 'image', src: 'slides/slide-02.png', title: 'Introduction' },
             { type: 'image', src: 'slides/slide-03.png', title: 'Research Process' },
             { type: 'image', src: 'slides/slide-04.png', title: 'Demo Introduction' },
-            { type: 'video', src: 'https://d18blj0nsu3kvw.cloudfront.net/Atayal.mp4', title: 'Live Demonstration', poster: 'slides/slide-04.png' },
+            { type: 'youtube', videoId: '3uCEN2Gonek', title: 'Live Demonstration', poster: 'slides/slide-04.png' },
             { type: 'image', src: 'slides/slide-05.png', title: 'Quantitative Results' },
             { type: 'image', src: 'slides/slide-06.png', title: 'Individual Progress' },
             { type: 'image', src: 'slides/slide-07.png', title: 'User Experience' },
@@ -901,6 +934,28 @@
                         </div>
                     `;
                     frame.appendChild(videoContent);
+                } else if (slide.type === 'youtube') {
+                    const videoContent = document.createElement('div');
+                    videoContent.className = 'video-slide-content';
+                    videoContent.id = 'videoSlideContent';
+                    videoContent.innerHTML = `
+                        <h2>Live Platform Demonstration</h2>
+                        <div class="video-container youtube-container" style="position: relative;">
+                            <iframe
+                                id="youtubePlayer"
+                                src="https://www.youtube.com/embed/${slide.videoId}?rel=0&modestbranding=1&playsinline=1&enablejsapi=1&vq=hd1080"
+                                title="YouTube video player"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerpolicy="strict-origin-when-cross-origin"
+                                allowfullscreen>
+                            </iframe>
+                            <button class="video-expand-btn" onclick="toggleVideoExpand()">
+                                <span id="expandIcon">⛶</span> <span id="expandText">展開影片</span>
+                            </button>
+                        </div>
+                    `;
+                    frame.appendChild(videoContent);
                 }
 
                 slideEl.appendChild(frame);
@@ -912,7 +967,7 @@
                 thumb.onclick = () => goToSlide(index);
 
                 const thumbImg = document.createElement('img');
-                thumbImg.src = slide.type === 'video' ? slide.poster : slide.src;
+                thumbImg.src = (slide.type === 'video' || slide.type === 'youtube') ? slide.poster : slide.src;
                 thumb.appendChild(thumbImg);
                 thumbnailStrip.appendChild(thumb);
             });
